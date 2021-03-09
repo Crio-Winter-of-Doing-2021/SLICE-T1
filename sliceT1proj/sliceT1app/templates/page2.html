@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block head_block %}
+  {% block title_block %}
+    <title>Pick Data Source</title>
+  {% endblock %}
+  {% load static %}
+  <script src="{% static '/js/google_picker.js' %}" type="text/javascript"></script>
+  <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+{% endblock %}
+
+{% block body_block %}
+  <nav class="navbar navbar-inverse navbar-static-top">
+    <div class="container">
+      <ul class="nav navbar-nav">
+          <li><a class="navbar-link" onclick="loadPicker()">Google drive</a></li>
+          <li><a class="navbar-link" href=#>Local storage</a></li>
+      </ul>
+    </div>
+  </nav>
+{% endblock %}

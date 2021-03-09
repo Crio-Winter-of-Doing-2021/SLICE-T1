@@ -1,0 +1,45 @@
+{% load rest_framework %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% block title_block %}
+  {% endblock %}
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+  <style media="screen">
+       #ftr{
+         padding: 20px;
+       }
+
+       .fa{
+             font-size: 23px;
+             width: 60px;
+             text-align: center;
+             text-decoration: none;
+             margin: 5px 2px;
+             border-radius: 50%;
+       }
+       .fa:hover{
+             opacity: 0.5;
+             text-decoration: none;
+           }
+       #container{
+           text-align: center;
+       }
+
+   </style>
+   {% block head_block %}
+   {% endblock %}
+
+</head>
+<body>
+
+  <div class="container">
+
+    {% block body_block %}
+    {% endblock %}
+
+
+</body>
+</html>
