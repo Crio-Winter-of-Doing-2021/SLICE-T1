@@ -89,6 +89,7 @@ function pickerCallback(data) {
         fetch("google_api",{
             method: 'POST',
             headers: {
+                'Accept': 'application/json, text/plain, */*',
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrftoken,
             },

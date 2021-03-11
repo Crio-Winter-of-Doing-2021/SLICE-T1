@@ -10,6 +10,7 @@ def index(request):
 def selectDataSource(request):
     return render(request,'page2.html')
 
+@csrf_exempt
 def google_api(request):
     file_ids = json.loads(request.body.decode("utf-8")).get("files")
     print(file_ids)
