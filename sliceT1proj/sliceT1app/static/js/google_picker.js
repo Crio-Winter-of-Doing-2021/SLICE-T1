@@ -1,11 +1,11 @@
 // The Browser API key obtained from the Google API Console.
 // Replace with your own Browser API key, or your own key.
-var developerKey = 'AIzaSyB9weMTeog4qj68rURkDX19jH8ktGa1wjg';
+var developerKey = '';
 // The Client ID obtained from the Google API Console. Replace with your own Client ID.
-var clientId = "369550619211-mpf7gb94kfb3ucga045oelfltjg41p6e.apps.googleusercontent.com"
+var clientId = ""
 // Replace with your own project number from console.developers.google.com.
 // See "Project number" under "IAM & Admin" > "Settings"
-var appId = "369550619211";
+var appId = "";
 // Scope to use to access user's Drive items.
 var scope = ['https://www.googleapis.com/auth/drive.file'];
 var pickerApiLoaded = false;
