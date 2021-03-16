@@ -19,6 +19,7 @@
     </div>
   </nav>
 
+  {% if files %}
   <table class="table table-hover">
       <thead>
           <th>Name</th>
@@ -34,6 +35,8 @@
         </tr>
       {% endfor %}
   </table>
-
-
+  <div class="text-center">
+    <a class="btn btn-primary" href="{% url 'sliceT1app:upload_S3' %}">Upload the files</a>
+  </div>
+  {% endif %}
 {% endblock %}

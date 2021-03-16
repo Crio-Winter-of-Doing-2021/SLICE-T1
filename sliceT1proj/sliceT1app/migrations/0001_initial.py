@@ -19,7 +19,6 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=256, null=True)),
                 ('size', models.IntegerField()),
                 ('url', models.URLField(max_length=500)),
-                ('file', models.FileField()),
             ],
         ),
     ]

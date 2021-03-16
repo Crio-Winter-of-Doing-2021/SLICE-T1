@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block body_block %}
+<div class="jumbotron">
+    <h3>Give your s3 credentials:</h3>
+
+    <form action="/storage_source/awsS3" enctype="multipart/form-data"  method="post">
+      {% csrf_token %}
+      <label for="BUCKET">Bucket name:</label>
+      <input type="text" name="bucket" value="" placeholder="Enter Bucket Name">
+      <br>
+      <label for="ACCESS_ID">ACCESS_ID:</label>
+      <input type="text" name="access_id" value="" placeholder="Enter ACCESS ID">
+      <br>
+      <label for="SECRET_KEY">SECRET_KEY:</label>
+      <input type="text" name="secret_key" value="" placeholder="Enter SECRET KEY">
+      <br>
+      <label for="FILE_PATH">FILE_PATH(optional):</label>
+      <input type="text" name="object_token" value="" placeholder="Enter file path">
+      
+      <button type="submit" value="add" id="button1" class="btn btn-success">SUBMIT!!</button>
+    </form>
+</div>
+{% endblock %}

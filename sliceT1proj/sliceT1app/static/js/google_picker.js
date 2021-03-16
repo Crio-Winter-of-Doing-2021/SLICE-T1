@@ -1,16 +1,18 @@
 // The Browser API key obtained from the Google API Console.
 // Replace with your own Browser API key, or your own key.
-var developerKey = 'AIzaSyB9weMTeog4qj68rURkDX19jH8ktGa1wjg';
+var developerKey = 'AIzaSyAYpOSff8PJxjUYLMjnuFkTXhAJPnWzBsw';
 // The Client ID obtained from the Google API Console. Replace with your own Client ID.
-var clientId = "369550619211-mpf7gb94kfb3ucga045oelfltjg41p6e.apps.googleusercontent.com"
+var clientId = "371503442644-facskhpl8njmi4luslkqb52ketq8kfvq.apps.googleusercontent.com"
+var clientSecret = "0C6TCd2sMEu6ctj75IOxL8tw"
 // Replace with your own project number from console.developers.google.com.
 // See "Project number" under "IAM & Admin" > "Settings"
-var appId = "369550619211";
+var appId = "371503442644";
 // Scope to use to access user's Drive items.
 var scope = ['https://www.googleapis.com/auth/drive.file'];
 var pickerApiLoaded = false;
 var oauthToken;
-
+var origAuthToken;
+var creds_needed;
 // Use the Google API Loader script to load the google.picker script.
 
 function loadPicker() {
@@ -22,7 +24,8 @@ function onAuthApiLoad() {
         {
         'client_id': clientId,
         'scope': scope,
-        'immediate': false
+        'immediate': false,
+        'response_type': 'id_token permission code'
         },
         handleAuthResult);
 }
@@ -33,6 +36,17 @@ function onPickerApiLoad() {
 function handleAuthResult(authResult) {
     if (authResult && !authResult.error) {
     oauthToken = authResult.access_token;
+    origAuthToken = authResult.code;
+    console.log(oauthToken);
+    console.log(authResult.code);
+    console.log(authResult.id_token);
+    creds_needed = {
+        "token": authResult.access_token,
+        "refresh_token": authResult.code,
+        "client_id": clientId,
+        "client_secret": clientSecret,
+        "scopes": scope
+    };
     createPicker();
     }
 }

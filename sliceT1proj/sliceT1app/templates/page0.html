@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body_block %}
+
+<h1> home page </h1>
+<h2> Select storage service (s3 or gcs)</h2>
+<p> <a href="{% url 'sliceT1app:awsS3' %}">Amazon S3</a> </p>
+<p> <a href=#>Google Cloud Service</a> </p>
+<!-- <a href="{% url 'sliceT1app:selectDS' %}">for now move to selecting data source page</a> -->
+
+{% endblock %}
