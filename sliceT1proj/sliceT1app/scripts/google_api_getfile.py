@@ -32,6 +32,17 @@ class Auth:
         self.get_credentials()
         self.drive_service = build('drive', 'v3', credentials=self.creds)
     
+    def check_name(self, file):
+        file_name = file['name']
+        last_dot_ind = -1
+        for i in range(len(file_name)-1,-1,-1):
+            if(file_name[i]=="."):
+                last_dot_ind = i
+                break
+        if(os.path.exists(os.path.join(media_dir, file_name))):
+            file_name = file_name[:last_dot_ind] + "_" + file["file_id"] + file_name[last_dot_ind:]
+            file["name"] = file_name
+    
     def locally_download_files(self, fileList):
         """
         For locally downloading the files
@@ -40,7 +51,8 @@ class Auth:
 
         for file in fileList:
             media_request = self.drive_service.files().get_media(fileId=file['file_id'])
-            fh = io.FileIO(os.path.join(media_dir,file['name']), 'wb')
+            self.check_name(file)
+            fh = io.FileIO(os.path.join(media_dir, file['name']), 'wb')
             downloader = MediaIoBaseDownload(fh, media_request)
             done = False
             while done is False:

@@ -1,0 +1,18 @@
+
+{% extends "base.html" %}
+{% block body_block %}
+<form action="/storage_source/gcs" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="form-group">
+      <label for="exampleFormControlFile1">Credential JSON File</label>
+      <input type="file" class="form-control-file" id="exampleFormControlFile1" name="files">
+      <label for="BUCKET">Bucket name:</label>
+      <input type="text" id="BUCKET" name="bucket" value="" placeholder="Enter Bucket Name">
+      <label for="FILE_PATH">FILE_PATH(optional):</label>
+      <input type="text" name="object_token" value="" placeholder="Enter file path">
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </div>
+</form>
+{% endblock %}
