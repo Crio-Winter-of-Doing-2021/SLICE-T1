@@ -3,7 +3,8 @@ import io
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from django.conf import settings
+from google.cloud import storage, exceptions
+from google.oauth2 import service_account
 
 SCOPES = "https://www.googleapis.com/auth/drive.file"
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -11,7 +12,7 @@ static_dir = os.path.join(base_dir, 'sliceT1app/static')
 media_dir = os.path.join(base_dir, 'media')
 CLIENT_SECRET_FILE = os.path.join(static_dir,"json/credentials.json")
 
-class Auth:
+class googleAPI:
     def __init__(self):
         self.client_secret = CLIENT_SECRET_FILE
         self.scopes = SCOPES
@@ -62,3 +63,28 @@ class Auth:
             while done is False:
                 status, done = downloader.next_chunk()
                 print("Download %s, %d%%"%(file['name'],int(status.progress() * 100)))
+        
+
+def upload(files_obj, info):
+    uploaded_check = False
+    uploaded_error = ""
+    try:
+        bucket_name = info['bucket_received']
+        object_name = info['object_token']
+        credentials = service_account.Credentials.from_service_account_file(os.path.join(media_dir, info['gcs_client_json_file_name']))
+        storage_client = storage.Client(credentials=credentials)
+        bucket = storage_client.get_bucket(bucket_name)
+
+        if(object_name!=""):
+            object_name += "/"
+        
+        for file in files_obj:
+            blob = bucket.blob(object_name+file.name)
+            blob.upload_from_filename(os.path.join(media_dir, file.name))
+        
+        uploaded_check = True
+    
+    except Exception as e:
+        uploaded_error = e
+    
+    return [uploaded_check, uploaded_error]

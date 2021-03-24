@@ -1,24 +1,17 @@
 from django.shortcuts import render, redirect
-from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from sliceT1app.serializers import DocSerializer
 import json
-from time import sleep
 from django.http import JsonResponse
 from sliceT1app.models import fileDoc
-from rest_framework.decorators import api_view
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.files.storage import FileSystemStorage
-from sliceT1app.scripts.google_api_getfile import *
-import boto3
-from google.cloud import storage,exceptions
-from google.oauth2 import service_account
-from django.contrib import messages
-import requests
+from sliceT1app.scripts import google_drive_gcs, awsS3
+import requests, os
 ###################
 '''
 Parameters For Credentials for configuration
@@ -44,8 +37,7 @@ def index(request):
 def google_api(request):
     file_details = json.loads(request.body)
     print(file_details)
-    Auth().locally_download_files(file_details)
-
+    google_drive_gcs.googleAPI().locally_download_files(file_details)
     serializer=DocSerializer(data=file_details,many=True)
     if serializer.is_valid():
         serializer.save()
@@ -72,7 +64,6 @@ def clear_user_data_from_app():
     if(globals()['storage_chosen'] == "gcs"):
         os.remove(os.path.join(media_dir, globals()['gcs_client_json_file_name']))
 
-
     for item in os.listdir(media_dir):
         if item.endswith(".json"):
             os.remove(os.path.join(media_dir, item))
@@ -84,8 +75,6 @@ def clear_user_data_from_app():
     globals()['object_token'] = None
     globals()['storage_chosen'] = None
     globals()['gcs_client_json_file_name'] = None
-
-
 
 
 class local_api(APIView):
@@ -125,7 +114,6 @@ class get_s3_credentials(APIView):
             globals()['access_id_received'] = request.POST.get('access_id')
             globals()['secret_key_received'] = request.POST.get('secret_key')
             globals()['object_token'] = request.POST.get('object_token')
-            print(bucket_received,access_id_received,secret_key_received)
             globals()["storage_chosen"] = "s3"
             return redirect("/files_display") #changed here from ds
         except Exception as e:
@@ -150,84 +138,6 @@ class get_gcs_credentials(APIView):
             # Error goes here
             return "error"
 
-def upload_S3(request):
-    files_obj=fileDoc.objects.all().order_by('-size')
-
-    if(not len(files_obj)>0):
-        return "error" # Has to be proper error page stating no upload
-    uploaded_error = ""
-    uploaded_check = False
-    try:
-        client = boto3.client(
-            's3',
-            aws_access_key_id=globals()['access_id_received'],
-            aws_secret_access_key=globals()['secret_key_received']
-        )
-        bucket_name = globals()['bucket_received']
-        object_name = globals()['object_token']
-
-        if(object_name!=""):   #whether a specific s3 path is given by the user
-            object_name += "/"
-
-        for file in files_obj:
-            client.upload_file(os.path.join(media_dir,file.name), bucket_name, object_name+file.name)
-        uploaded_check = True
-    except boto3.exceptions.Boto3Error as e:
-        uploaded_error=e
-
-    if(uploaded_check):
-        clear_user_data_from_app()
-        #return redirect("/")
-    return [uploaded_check,uploaded_error]
-
-def upload_gcs(request):
-    files_obj=fileDoc.objects.all().order_by('-size')
-
-    if(not len(files_obj)>0):
-        return "error" # Has to be proper error page stating no upload
-    uploaded_check = False
-    uploaded_error = ""
-    try:
-        bucket_name = globals()['bucket_received']
-        object_name = globals()['object_token']
-
-        credentials = service_account.Credentials.from_service_account_file(os.path.join(media_dir, globals()['gcs_client_json_file_name']))
-        storage_client = storage.Client(credentials=credentials)
-        bucket = storage_client.get_bucket(bucket_name)
-
-        if(object_name!=""):
-            object_name += "/"
-
-        for file in files_obj:
-            blob = bucket.blob(object_name+file.name)
-            blob.upload_from_filename(os.path.join(media_dir, file.name))
-        uploaded_check = True
-    except Exception as e:
-        uploaded_error=e
-    if(uploaded_check):
-        clear_user_data_from_app()
-    return [uploaded_check,uploaded_error]
-
-
-def upload(request):
-    storage = globals()['storage_chosen']
-    result=[]
-    if(storage=="gcs"):
-        result = upload_gcs(request)
-    elif(storage=="s3"):
-        result  = upload_S3(request)
-
-    if(len(result)==0):
-        clear_user_data_from_app()
-        return render(request,'errors_page.html',{'error':'session out'})
-
-    if(result[0]==True):
-        return render(request,"page0.html",{'message':True})
-    else:
-        clear_user_data_from_app()
-        return render(request,'errors_page.html',{'error':result[1],'credentials_error':True})
-
-
 class login_dm(APIView):
     def get(self, request):
         return render(request,'page4.html')
@@ -250,6 +160,7 @@ class login_dm(APIView):
 
         if(response.text):
             data=json.loads(response.text)
+            print(data)
             for jobj in data:
                 jobj['fid'] = jobj.pop('_id')
 
@@ -313,14 +224,12 @@ class upload_from_dm(APIView):
             # l=data[0]['url'].split('/')
             # fid=l[5]
             # print("FETCHED_DOC: ",data[0])
-
             # image_url = "https://drive.google.com/uc?export=download&id="+fid
             file_name, file_url = selected_files[i].split(", ")
             r = requests.get(file_url)
             path = os.path.join(base_dir, 'media/'+str(file_name))
             with open(path,'wb') as f:
                 f.write(r.content)
-
             s = os.stat(path).st_size
             temp = {"name":file_name,"size":s,"url":file_url}
             data.append(temp)
@@ -328,3 +237,46 @@ class upload_from_dm(APIView):
         if serializer.is_valid():
             serializer.save()
             return redirect("/files_display")
+
+# Uploading part goes here
+def upload_S3(request):
+    files_obj=fileDoc.objects.all().order_by('-size')
+    if(not len(files_obj)>0):
+        return "error" # Has to be proper error page stating no upload
+    info = {}
+    info['bucket_received'] = globals()['bucket_received']
+    info['object_token'] = globals()['object_token']
+    info['access_id_received'] = globals()['access_id_received']
+    info['secret_key_received'] = globals()['secret_key_received']
+    return awsS3.upload(files_obj, info)
+    
+
+def upload_gcs(request):
+    files_obj = fileDoc.objects.all().order_by('-size')
+    if(not len(files_obj)>0):
+        return "error" # Has to be proper error page stating no upload
+    info = {}
+    info['bucket_received'] = globals()['bucket_received']
+    info['object_token'] = globals()['object_token']
+    info['gcs_client_json_file_name'] = globals()['gcs_client_json_file_name']
+    return google_drive_gcs.upload(files_obj, info)
+
+
+def upload(request):
+    storage = globals()['storage_chosen']
+    result=[]
+    if(storage=="gcs"):
+        result = upload_gcs(request)
+    elif(storage=="s3"):
+        result  = upload_S3(request)
+
+    if(len(result)==0):
+        clear_user_data_from_app()
+        return render(request,'errors_page.html',{'error':'session out'})
+
+    elif(result[0]==True):
+        clear_user_data_from_app()
+        return render(request,"page0.html",{'message':True})
+    else:
+        clear_user_data_from_app()
+        return render(request,'errors_page.html',{'error':result[1],'credentials_error':True})
