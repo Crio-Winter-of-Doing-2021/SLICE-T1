@@ -13,4 +13,8 @@ urlpatterns=[
     path('file_delete/<id>', views.delete_file, name='deleteFile'),
     path('local_api', views.local_api.as_view(), name="local_api"),
     path('upload', views.upload, name="upload"),
+    path('login_digimocker',views.login_dm.as_view(),name="login_Digimocker"),
+    path('register_digimocker',views.register_dm.as_view(),name="register_Digimocker"),
+    path('upload_to_digimocker',views.upload_to_dm.as_view(),name="upload_To_Digimocker"),
+    path('upload_from_digimocker',views.upload_from_dm.as_view(),name="upload_From_Digimocker"),
 ]

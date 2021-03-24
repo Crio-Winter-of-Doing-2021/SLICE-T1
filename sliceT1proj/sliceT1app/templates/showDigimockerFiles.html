@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block body_block %}
+<button class="btn btn-success"><a href="{% url 'sliceT1app:upload_To_Digimocker' %}">Upload Files to Digilocker</a></button>
+<h1>Your current digimocker files</h1>
+{% if files %}
+<form enctype='application/json' action="{% url 'sliceT1app:upload_From_Digimocker' %}" method="post">
+  {% csrf_token %}
+<table class="table table-hover">
+    <thead>
+        <th>Name</th>
+        <th>file_id</th>
+        <th>Url</th>
+        <th>Select</th>
+    </thead>
+    {% for f in files %}
+      <tr>
+          <td>{{ f.name }}</td>
+          <td>{{ f.identifier }}</td>
+          <td>{{ f.url }}</td>
+          <td>
+
+                <input type="checkbox" id="checkbox" name="selected" value='{{f.name}}, {{f.url}}'>
+                <!-- <input type="submit"  value="Mark as complete"> -->
+          </td>
+      </tr>
+    {% endfor %}
+</table>
+<input type="submit" value="Submit">
+</form>
+{% endif %}
+{% endblock %}

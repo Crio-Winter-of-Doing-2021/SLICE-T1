@@ -23,15 +23,15 @@ class Auth:
         """
         flow = InstalledAppFlow.from_client_secrets_file(self.client_secret, self.scopes)
         self.creds = flow.run_local_server(port=8080)
-    
+
     def get_drive_service(self):
         """
-        For getting the drive_service instance from 
+        For getting the drive_service instance from
         the credentials of the user
         """
         self.get_credentials()
         self.drive_service = build('drive', 'v3', credentials=self.creds)
-    
+
     def check_name(self, file):
         file_name = file['name']
         last_dot_ind = -1
@@ -42,15 +42,19 @@ class Auth:
         if(os.path.exists(os.path.join(media_dir, file_name))):
             file_name = file_name[:last_dot_ind] + "_" + file["file_id"] + file_name[last_dot_ind:]
             file["name"] = file_name
-    
-    def locally_download_files(self, fileList):
+
+    def locally_download_files(self, fileList,dm=False):
         """
         For locally downloading the files
         """
         self.get_drive_service()
 
         for file in fileList:
-            media_request = self.drive_service.files().get_media(fileId=file['file_id'])
+            if dm==True:
+                media_request = self.drive_service.files().get(fileId=file['file_id'])
+            else:
+                media_request = self.drive_service.files().get_media(fileId=file['file_id'])
+            print(media_request)
             self.check_name(file)
             fh = io.FileIO(os.path.join(media_dir, file['name']), 'wb')
             downloader = MediaIoBaseDownload(fh, media_request)

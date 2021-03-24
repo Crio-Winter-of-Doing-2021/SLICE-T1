@@ -1,18 +1,33 @@
 
 {% extends "base.html" %}
 {% block body_block %}
-<form action="/storage_source/gcs" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="form-group">
-      <label for="exampleFormControlFile1">Credential JSON File</label>
-      <input type="file" class="form-control-file" id="exampleFormControlFile1" name="files">
-      <label for="BUCKET">Bucket name:</label>
-      <input type="text" id="BUCKET" name="bucket" value="" placeholder="Enter Bucket Name">
-      <label for="FILE_PATH">FILE_PATH(optional):</label>
-      <input type="text" name="object_token" value="" placeholder="Enter file path">
-    </div>
-    <div>
-        <button type="submit" class="btn btn-primary">Upload</button>
-    </div>
-</form>
+<script type="text/javascript">
+function reset() {
+  document.getElementById("gcs_form").reset();
+}
+</script>
+
+<div id="gcs_form" class="jumbotron">
+  <h2>Storage service selected as Google cloud storage</h2>
+  <p>You need to have credentials file of service account for your google cloud storage bucket.</p>
+  <p>If you haven't created yet, you can follow this link <a href="https://cloud.google.com/docs/authentication/production#create_service_account">Getting credentials for gcs</a> to understand how to do it. </p>
+  <form action="/storage_source/gcs" method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="exampleFormControlFile1">Credential JSON File</label>
+        <input type="file" class="form-control-file" id="exampleFormControlFile1" name="files" required>
+        <br>
+        <label for="BUCKET">Bucket name:</label>
+        <input type="text" id="BUCKET" name="bucket" value="" placeholder="Enter Bucket Name" required>
+        <br>
+        <label for="FILE_PATH">FILE_PATH(optional):</label>
+        <input type="text" name="object_token" value="" placeholder="Enter file path">
+      </div>
+      <br>
+      <div>
+          <button type="submit" class="btn btn-primary" onsubmit="reset()">Upload</button>
+      </div>
+  </form>
+</div>
+
 {% endblock %}

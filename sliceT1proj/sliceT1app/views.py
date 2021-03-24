@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from sliceT1app.serializers import DocSerializer
 import json
+from time import sleep
 from django.http import JsonResponse
 from sliceT1app.models import fileDoc
 from rest_framework.decorators import api_view
@@ -14,9 +15,10 @@ from rest_framework import status
 from django.core.files.storage import FileSystemStorage
 from sliceT1app.scripts.google_api_getfile import *
 import boto3
-from google.cloud import storage
+from google.cloud import storage,exceptions
 from google.oauth2 import service_account
-
+from django.contrib import messages
+import requests
 ###################
 '''
 Parameters For Credentials for configuration
@@ -41,8 +43,9 @@ def index(request):
 @csrf_exempt
 def google_api(request):
     file_details = json.loads(request.body)
+    print(file_details)
     Auth().locally_download_files(file_details)
-    
+
     serializer=DocSerializer(data=file_details,many=True)
     if serializer.is_valid():
         serializer.save()
@@ -62,18 +65,24 @@ def delete_file(request, id):
 
 def clear_user_data_from_app():
     files = fileDoc.objects.all()
-    # Removing the files from local databse
+    # Removing the files from local database
     for file in files:
         os.remove(os.path.join(media_dir,file.name))
-    # Removing the file models from db
+
     if(globals()['storage_chosen'] == "gcs"):
         os.remove(os.path.join(media_dir, globals()['gcs_client_json_file_name']))
+
+
+    for item in os.listdir(media_dir):
+        if item.endswith(".json"):
+            os.remove(os.path.join(media_dir, item))
+    # Removing the files from models
     files.delete()
     globals()['bucket_received'] = None
     globals()['access_id_received'] = None
     globals()['secret_key_received'] = None
     globals()['object_token'] = None
-    globals()[storage_chosen] = None
+    globals()['storage_chosen'] = None
     globals()['gcs_client_json_file_name'] = None
 
 
@@ -122,75 +131,6 @@ class get_s3_credentials(APIView):
         except Exception as e:
             print(e)
 
-def upload_S3(request):
-    files_obj=fileDoc.objects.all().order_by('-size')
-
-    if(not len(files_obj)>0):
-        return "error" # Has to be proper error page stating no upload
-    uploaded_check = False
-    try:
-        client = boto3.client(
-            's3',
-            aws_access_key_id=globals()['access_id_received'],
-            aws_secret_access_key=globals()['secret_key_received']
-        )
-        bucket_name = globals()['bucket_received']
-        object_name = globals()['object_token']
-
-        if(object_name!=""):
-            object_name += "/"
-
-        for file in files_obj:
-            client.upload_file(os.path.join(media_dir,file.name), bucket_name, object_name+file.name)
-        uploaded_check = True
-    except boto3.exceptions.Boto3Error as e:
-        # Error Page
-        print(e)
-    if(uploaded_check):
-        clear_user_data_from_app()
-        #return redirect("/")
-    return uploaded_check
-    return "error"
-
-def upload_gcs(request):
-    files_obj=fileDoc.objects.all().order_by('-size')
-
-    if(not len(files_obj)>0):
-        return "error" # Has to be proper error page stating no upload
-    uploaded_check = False
-    try:
-        bucket_name = globals()['bucket_received']
-        object_name = globals()['object_token']
-
-        credentials = service_account.Credentials.from_service_account_file(os.path.join(media_dir, globals()['gcs_client_json_file_name']))
-        storage_client = storage.Client(credentials=credentials)
-        bucket = storage_client.get_bucket(bucket_name)
-
-        if(object_name!=""):
-            object_name += "/"
-
-        for file in files_obj:
-            blob = bucket.blob(object_name+file.name)
-            blob.upload_from_filename(os.path.join(media_dir, file.name))
-        uploaded_check = True
-    except boto3.exceptions.Boto3Error as e:
-        # Error Page
-        print(e)
-    if(uploaded_check):
-        clear_user_data_from_app()
-        #return redirect("/")
-    return uploaded_check
-    return "error"
-
-def upload(request):
-    storage = globals()['storage_chosen']
-    if(storage=="gcs"):
-        upload_check = upload_gcs(request)
-    elif(storage=="s3"):
-        upload_check = upload_S3(request)
-    if(upload_check):
-        return redirect("/")
-
 class get_gcs_credentials(APIView):
 
     def get(self, request):
@@ -209,3 +149,182 @@ class get_gcs_credentials(APIView):
         except Exception as e:
             # Error goes here
             return "error"
+
+def upload_S3(request):
+    files_obj=fileDoc.objects.all().order_by('-size')
+
+    if(not len(files_obj)>0):
+        return "error" # Has to be proper error page stating no upload
+    uploaded_error = ""
+    uploaded_check = False
+    try:
+        client = boto3.client(
+            's3',
+            aws_access_key_id=globals()['access_id_received'],
+            aws_secret_access_key=globals()['secret_key_received']
+        )
+        bucket_name = globals()['bucket_received']
+        object_name = globals()['object_token']
+
+        if(object_name!=""):   #whether a specific s3 path is given by the user
+            object_name += "/"
+
+        for file in files_obj:
+            client.upload_file(os.path.join(media_dir,file.name), bucket_name, object_name+file.name)
+        uploaded_check = True
+    except boto3.exceptions.Boto3Error as e:
+        uploaded_error=e
+
+    if(uploaded_check):
+        clear_user_data_from_app()
+        #return redirect("/")
+    return [uploaded_check,uploaded_error]
+
+def upload_gcs(request):
+    files_obj=fileDoc.objects.all().order_by('-size')
+
+    if(not len(files_obj)>0):
+        return "error" # Has to be proper error page stating no upload
+    uploaded_check = False
+    uploaded_error = ""
+    try:
+        bucket_name = globals()['bucket_received']
+        object_name = globals()['object_token']
+
+        credentials = service_account.Credentials.from_service_account_file(os.path.join(media_dir, globals()['gcs_client_json_file_name']))
+        storage_client = storage.Client(credentials=credentials)
+        bucket = storage_client.get_bucket(bucket_name)
+
+        if(object_name!=""):
+            object_name += "/"
+
+        for file in files_obj:
+            blob = bucket.blob(object_name+file.name)
+            blob.upload_from_filename(os.path.join(media_dir, file.name))
+        uploaded_check = True
+    except Exception as e:
+        uploaded_error=e
+    if(uploaded_check):
+        clear_user_data_from_app()
+    return [uploaded_check,uploaded_error]
+
+
+def upload(request):
+    storage = globals()['storage_chosen']
+    result=[]
+    if(storage=="gcs"):
+        result = upload_gcs(request)
+    elif(storage=="s3"):
+        result  = upload_S3(request)
+
+    if(len(result)==0):
+        clear_user_data_from_app()
+        return render(request,'errors_page.html',{'error':'session out'})
+
+    if(result[0]==True):
+        return render(request,"page0.html",{'message':True})
+    else:
+        clear_user_data_from_app()
+        return render(request,'errors_page.html',{'error':result[1],'credentials_error':True})
+
+
+class login_dm(APIView):
+    def get(self, request):
+        return render(request,'page4.html')
+
+    def post(self, request):
+        user_email = request.POST.get('email')
+        user_password = request.POST.get('password')
+        query = {'email':user_email, 'password':user_password}
+        response = requests.post('https://digimocker.herokuapp.com/api/user/login', json=query)
+        if response.status_code != 200:
+            return HttpResponse(status=response.status_code)
+        print("LOGIN: ",response.status_code)
+        authToken = str(response.text)
+        request.session['token'] = authToken
+        request.session['email'] = user_email
+        my_headers = {"auth-token": authToken}
+        response = requests.get('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
+        data=[]
+        print("GET FILES: ",response.status_code)
+
+        if(response.text):
+            data=json.loads(response.text)
+            for jobj in data:
+                jobj['fid'] = jobj.pop('_id')
+
+        print("files present: ",data)
+
+        return render(request,'showDigimockerFiles.html',{'files':data})
+
+
+class register_dm(APIView):
+    def get(self, request):
+        return render(request,'page5.html')
+
+    def post(self, request):
+        user_name=request.POST.get('name')
+        user_email=request.POST.get('email')
+        user_password=request.POST.get('password')
+        query = {"name":user_name,"email":user_email, "password":user_password}
+        print(query)
+        response = requests.post('https://digimocker.herokuapp.com/api/user/register', json=query)
+        print("REGISTER: ",response.status_code)
+        if response.status_code != 200:
+            return HttpResponse(status=response.status_code)
+        return redirect("/login_digimocker")
+
+
+class upload_to_dm(APIView):
+    def get(self, request):
+        return render(request,'uploadToDm.html')
+
+    def post(self, request):
+        #getting POST data
+        my_headers = {'auth-token' : request.session['token']}
+        user_email=request.POST.get('email')
+        name=request.POST.get('name')
+        email=request.POST.get('email')
+        identifier=request.POST.get('identifier')
+        url=request.POST.get('url')
+
+        #adding file by a POST request to API
+        file_data={"name":name,"email":email,"identifier":identifier,"url":url}
+        response = requests.post('https://digimocker.herokuapp.com/api/docs/add', json=file_data,headers=my_headers)
+        print("UPLOADED_DOC: ",response.text)
+
+        #getting updated list of files by a GET request to API
+        response = requests.get('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
+        data=json.loads(response.text)
+        return render(request,'showDigimockerFiles.html',{'files':data})
+        
+
+class upload_from_dm(APIView):
+    def post(self, request):
+        selected_files=request.POST.getlist('selected')
+        data = []
+        for i in range(0,len(selected_files)):
+            # docType=str(f)
+            # authToken=request.session['token']
+            # user_email=request.session['email']
+            # my_headers={"auth-token":authToken}
+            # response = requests.get('https://digimocker.herokuapp.com/api/docs/'+docType, json={"email":user_email},headers=my_headers)
+            # data=json.loads(response.text)
+            # l=data[0]['url'].split('/')
+            # fid=l[5]
+            # print("FETCHED_DOC: ",data[0])
+
+            # image_url = "https://drive.google.com/uc?export=download&id="+fid
+            file_name, file_url = selected_files[i].split(", ")
+            r = requests.get(file_url)
+            path = os.path.join(base_dir, 'media/'+str(file_name))
+            with open(path,'wb') as f:
+                f.write(r.content)
+
+            s = os.stat(path).st_size
+            temp = {"name":file_name,"size":s,"url":file_url}
+            data.append(temp)
+        serializer=DocSerializer(data=data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return redirect("/files_display")
