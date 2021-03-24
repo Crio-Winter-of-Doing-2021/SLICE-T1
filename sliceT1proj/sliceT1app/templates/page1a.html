@@ -1,30 +1,44 @@
 {% extends "base.html" %}
 
 {% block body_block %}
+
 <script type="text/javascript">
 function reset() {
   document.getElementById("s3_form").reset();
 }
 </script>
+<h2>Storage service selected as Amazon S3</h2>
+<h4>Give your s3 credentials:</h4>
 
-<div class="jumbotron">
-    <h2>Storage service selected as Amazon S3</h2>
-    <h3>Give your s3 credentials:</h3>
-    <form id="s3_form" action="/storage_source/awsS3" enctype="multipart/form-data"  method="post">
-      {% csrf_token %}
-      <label for="BUCKET">Bucket name:</label>
-      <input type="text" name="bucket" value="" placeholder="Enter Bucket Name" required>
-      <br>
-      <label for="ACCESS_ID">ACCESS_ID:</label>
-      <input type="text" name="access_id" value="" placeholder="Enter ACCESS ID" required>
-      <br>
-      <label for="SECRET_KEY">SECRET_KEY:</label>
-      <input type="text" name="secret_key" value="" placeholder="Enter SECRET KEY" required>
-      <br>
-      <label for="FILE_PATH">FILE_PATH(optional):</label>
-      <input type="text" name="object_token" value="" placeholder="Enter file path">
-      <br>
-      <button type="submit" value="add" id="button1" class="btn btn-success" onsubmit="reset()">SUBMIT!!</button>
-    </form>
+<div id="s3_form" class="jumbotron">
+  <form action="/storage_source/awsS3" enctype="multipart/form-data"  method="post">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="bucket">Bucket Name</label>
+      <input type="text" class="form-control" id="bucket" name="bucket" value="" placeholder="Enter Bucket Name" required>
+      <!-- <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+    </div>
+
+    <div class="form-group">
+      <label for="access_id">ACCESS ID</label>
+      <input type="text" class="form-control" id="access_id" name="access_id" value="" placeholder="Enter ACCESS ID" required>
+    </div>
+
+    <div class="form-group">
+      <label for="secret_key">SECRET KEY</label>
+      <input type="text" class="form-control" id="secret_key" name="secret_key" value="" placeholder="Enter SECRET KEY" required>
+    </div>
+
+    <div class="form-group">
+      <label for="object_token">FILE_PATH(optional)</label>
+      <input type="text" class="form-control" id="object_token" name="object_token" value="" placeholder="Enter file path">
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary" onsubmit="reset()">Upload</button>
+    </div>
+
+  </form>
 </div>
 {% endblock %}

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block body_block %}
+<br>
 <form action="/upload_to_digimocker" method="POST">
   {% csrf_token %}
   <div class="jumbotron">

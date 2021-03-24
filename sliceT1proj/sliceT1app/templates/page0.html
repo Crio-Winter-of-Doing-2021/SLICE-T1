@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
 {% block body_block %}
+<h2>Document Library for storing documents</h2>
 <div class="jumbotron">
   {% if message %}
     <div class="alert alert-success">
       <h3>Files successfully uploaded!</h3>
     </div>
   {% endif %}
-  <h2> sliceT1 </h2>
-  <h4> Select storage service (s3 or gcs)</h4>
+  <h4>Select storage service (s3 or gcs)</h4>
   <ul>
     <li>  <p> <a href="{% url 'sliceT1app:awsS3' %}">Amazon S3</a> </p></li>
     <li>  <p> <a href="{% url 'sliceT1app:gcs' %}">Google Cloud Service</a> </p></li>

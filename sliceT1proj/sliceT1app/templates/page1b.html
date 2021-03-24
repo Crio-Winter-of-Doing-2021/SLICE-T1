@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 {% block body_block %}
 <script type="text/javascript">
@@ -6,24 +5,29 @@ function reset() {
   document.getElementById("gcs_form").reset();
 }
 </script>
+<h2>Storage service selected as Google cloud storage</h2>
+<h4>You need to have credentials file of service account for your google cloud storage bucket.</h4>
+<h4>If you haven't created yet, you can follow this link <a href="https://cloud.google.com/docs/authentication/production#create_service_account">Getting credentials for gcs</a> to understand how to do it. </h4>
 
 <div id="gcs_form" class="jumbotron">
-  <h2>Storage service selected as Google cloud storage</h2>
-  <p>You need to have credentials file of service account for your google cloud storage bucket.</p>
-  <p>If you haven't created yet, you can follow this link <a href="https://cloud.google.com/docs/authentication/production#create_service_account">Getting credentials for gcs</a> to understand how to do it. </p>
   <form action="/storage_source/gcs" method="POST" enctype="multipart/form-data">
       {% csrf_token %}
+
       <div class="form-group">
-        <label for="exampleFormControlFile1">Credential JSON File</label>
-        <input type="file" class="form-control-file" id="exampleFormControlFile1" name="files" required>
-        <br>
-        <label for="BUCKET">Bucket name:</label>
-        <input type="text" id="BUCKET" name="bucket" value="" placeholder="Enter Bucket Name" required>
-        <br>
-        <label for="FILE_PATH">FILE_PATH(optional):</label>
-        <input type="text" name="object_token" value="" placeholder="Enter file path">
+        <label for="file">Credential JSON File</label>
+        <input type="file" class="form-control-file" id="file" name="files" required>
       </div>
-      <br>
+
+      <div class="form-group">
+        <label for="bucket">Bucket Name</label>
+        <input type="text" class="form-control" id="bucket" name="bucket" value="" placeholder="Enter Bucket Name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="object_token">FILE_PATH(optional)</label>
+        <input type="text" class="form-control" id="object_token" name="object_token" value="" placeholder="Enter file path">
+      </div>
+
       <div>
           <button type="submit" class="btn btn-primary" onsubmit="reset()">Upload</button>
       </div>

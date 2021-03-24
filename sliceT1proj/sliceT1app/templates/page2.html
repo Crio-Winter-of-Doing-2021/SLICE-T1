@@ -8,8 +8,9 @@
   <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
 
 {% endblock %}
-{% block body_block %}
 
+{% block body_block %}
+<h2>Pick Data Source</h2>
   <nav class="navbar navbar-inverse navbar-static-top">
     <div class="container">
       <ul class="nav navbar-nav">
@@ -21,6 +22,9 @@
   </nav>
 
   {% if files %}
+  <div class="text-center">
+    <a class="btn btn-primary" href="{% url 'sliceT1app:upload' %}">Upload the files</a>
+  </div>
   <table class="table table-hover">
       <thead>
           <th>Name</th>
