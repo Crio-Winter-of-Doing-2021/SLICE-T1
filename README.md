@@ -10,6 +10,7 @@ A document library that integrates with multiple data sources (like digiLocker, 
 * [Python](https://www.python.org/)
 * [Django](https://www.djangoproject.com/): Django builds better web apps with less code
 * [DRF](www.django-rest-framework.org/): A powerful and flexible toolkit for building Rest APIs with Django
+* Frontend: HTML5, Bootstrap, JS
 * Architecture of the Library
 ![Architecture](https://drive.google.com/uc?export=view&id=1klItD0DEG-0b9NExLGSS_QUkOwYDNs8v)
 
