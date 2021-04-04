@@ -234,7 +234,7 @@ class upload_to_dm(APIView):
         url=request.POST.get('url')
 
         file_data={"name":name,"email":email,"identifier":identifier,"url":url}
-        response = requests.post('https://digimocker.herokuapp.com/api/docs/add', json=file_data,headers=my_headers)
+        response = requests.post('https://digimocker.herokuapp.com/api/add', json=file_data,headers=my_headers)
         #making a POST request to digimocker api for uploading new doc
 
         response = requests.post('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
