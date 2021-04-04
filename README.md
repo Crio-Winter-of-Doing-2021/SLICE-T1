@@ -1,6 +1,3 @@
-# SLICE-T1
-Team ID: SLICE-T1 | Team Members: Pratyush Jaiswal &amp; Dharmesh Singh
-
 # DOCLIB
 
 A document library that integrates with multiple data sources (like digiLocker, Google Drive, local storage etc.) and storage services (like S3 and Google Cloud Storage) and uploads data from these data sources to the chosen storage service. It can be integrated with any Django Project.
@@ -10,6 +7,7 @@ A document library that integrates with multiple data sources (like digiLocker, 
 * [Python](https://www.python.org/)
 * [Django](https://www.djangoproject.com/): Django builds better web apps with less code
 * [DRF](www.django-rest-framework.org/): A powerful and flexible toolkit for building Rest APIs with Django
+* Frontend: HTML5, Bootstrap, JS
 * Architecture of the Library
 ![Architecture](https://drive.google.com/uc?export=view&id=1klItD0DEG-0b9NExLGSS_QUkOwYDNs8v)
 
@@ -105,7 +103,7 @@ demo_proj
 
 6. Run ``python manage.py migrate`` to create the doclib models.
 
-7. Start the development server and visit ``http://127.0.0.1:8000/doclib/`` to access the doclib.
+7. Start the development server and visit ``http://localhost:8000/doclib/`` to access the doclib.
 
 ## **REPOSITORY WALKTHROUGH**
 
@@ -141,4 +139,4 @@ demo_proj
 
 7. Run ``python manage.py migrate`` to create the doclib models.
 
-8. Start the development server and visit ``http://127.0.0.1:8000/doclib/`` to access the doclib.
+8. Start the development server and visit ``http://localhost:8000/doclib/`` to access the doclib.
