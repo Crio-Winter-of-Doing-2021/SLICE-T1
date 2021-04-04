@@ -141,9 +141,6 @@ class local_api(APIView):
         for f in request.FILES.getlist("files"):
             file = fs.save(f.name,f)
             temp = {"name":file,"url":"local_storage","size":fs.size(file)}
-            # temp["name"] = file
-            # temp["url"] = "local_storage"
-            # temp["size"] = fs.size(file)
             all_local_files.append(temp)
 
         file_serializer = DocSerializer(data=all_local_files, many=True)
@@ -180,7 +177,7 @@ class login_dm(APIView):
         request.session['token'] = authToken
         request.session['email'] = user_email
         my_headers = {"auth-token": authToken}
-        response = requests.get('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
+        response = requests.post('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
         #making a GET request to digimocker api documents
         if response.status_code != 200:
             return HttpResponse(status=response.status_code)
@@ -240,7 +237,7 @@ class upload_to_dm(APIView):
         response = requests.post('https://digimocker.herokuapp.com/api/docs/add', json=file_data,headers=my_headers)
         #making a POST request to digimocker api for uploading new doc
 
-        response = requests.get('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
+        response = requests.post('https://digimocker.herokuapp.com/api/docs', json={"email":user_email},headers=my_headers)
         #making a GET request to digimocker api documents
 
         data=json.loads(response.text)
