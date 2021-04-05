@@ -75,8 +75,9 @@ demo_proj
     * Put the google api client secret json file with name as ``credentials_gcs.json`` in ``credentials_dir`` directory
     For getting the API and Developer keys, visit [here](https://cloud.google.com/docs/authentication/production#create_service_account).
 
-    * Make a ``.env`` file in the project folder directory (at the project settings.py level) and put the Browser API keys obtained from the Google API Console like this (don’t use quotations around strings)
+    * Make a ``.env`` file in the project folder directory (at the project settings.py level) and put the Browser API keys obtained from the Google API Console like this along with the SECRET_KEY of the django project (don’t use quotations around strings)
 
+        ``SECRET_KEY``=##################
         ``DEVELOPER_KEY``=##################  
         ``CLIENT_ID``=##################  
         ``CLIENT_SECRET``=##################  
