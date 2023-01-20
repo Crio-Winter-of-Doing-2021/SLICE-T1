@@ -2,6 +2,10 @@
 
 A document library that integrates with multiple data sources (like digiLocker, Google Drive, local storage etc.) and storage services (like S3 and Google Cloud Storage) and uploads data from these data sources to the chosen storage service. It can be integrated with any Django Project.
 
+With multiple different software and accounts being used to store our documents and images, the files that are important to us are spread out across these. This creates a need to bring all these files into a storage service, making it easier to store, search and keep track of files in one place.
+
+* [Demo Video](https://www.youtube.com/watch?v=0J5P3T5QxM8&ab_channel=DharmeshSingh)
+
 ## **TECHNOLOGIES**
 
 * [Python](https://www.python.org/)
@@ -32,7 +36,7 @@ A document library that integrates with multiple data sources (like digiLocker, 
 Install the package  
 
 ```py
-pip install django-doclib
+pip3 install django-doclib
 ```
 
 ### Before running the server, make sure ```Directory``` looks like
@@ -52,7 +56,7 @@ demo_proj
 
 ### Follow the steps
 
-1. Add ``doclib`` and ``rest_framework`` to your INSTALLED_APPS setting like this
+1. Add ``doclib`` and ``rest_framework`` to your INSTALLED_APPS of settings.py like this
 
     INSTALLED_APPS = [  
         ...  
@@ -62,9 +66,13 @@ demo_proj
 
 2. Include the doclib URLconf in your project urls.py like this
 
+    ```from django.conf.urls import include```
+
     ``path('doclib/', include('doclib.urls'))``
 
 3. Provide ``MEDIA_ROOT`` in your project settings.py, something like this
+    
+    ```import os```
 
     ``MEDIA_ROOT = os.path.join(BASE_DIR, 'media')``
 
@@ -99,9 +107,9 @@ demo_proj
         APP_ID        = env("APP_ID")
         ```
 
-6. Run ``python manage.py migrate`` to create the doclib models.
+6. Run ``python3 manage.py migrate`` to create the doclib models.
 
-7. Start the development server by running ``python manage.py runserver localhost:8000``
+7. Start the development server by running ``python3 manage.py runserver localhost:8000``
 
 8. Visit ``http://localhost:8000/doclib/`` to access the doclib.
 
